@@ -245,8 +245,20 @@ server {
 	{{ if $enable_ipv6 }}
 	listen [::]:80 {{ $default_server }};
 	{{ end }}
-	access_log /var/log/nginx/access.log vhost;
-	return 301 https://$host$request_uri;
+	access_log /var/log/nginx/access.log vhost
+
+	location ^~ /.well-known/acme-challenge/ {
+		auth_basic off;
+		auth_request off;
+		allow all;
+		root /usr/share/nginx/html;
+		try_files $uri =404;
+		break;
+	}
+
+	location / {
+		return 301 https://$host$request_uri;
+	}
 }
 {{ end }}
 
